@@ -1,0 +1,102 @@
+<!--
+-- ICT 442 - Javascript and the DOM - Assignment 1
+-- February 5th, 2019
+
+-- Student's first name: Jorge Luis
+-- Student's last name: Monge Blanco
+-- email: jorge.monge.bgis@gmail.com
+-- email: gis@jorgemonge.ca
+-- hosted version of this page: https://tender-leavitt-ed94ae.netlify.com/
+-- Date Submitted: 2019 February
+--
+-- *** NOTES ***
+-- External CSS and JS files
+-- All custom behaviour build with vanilla Javascript
+-- External CSS framework: W3
+
+-->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="description" content="simple counter with Javascript">
+    <meta name="keywords" content="HTML,CSS, Javascript">
+    <meta name="author" content="Jorge Luis Monge Blanco">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!--Using the w3 css framework (https://www.w3schools.com/w3css/default.asp)-->
+    <link rel="stylesheet" href="Assignment_1/css/w3.css">
+    <link type="text/css" rel="stylesheet" href="Assignment_1/css/main.css" />
+    <!--Using vanilla JS for our website. No JS frameworks-->
+    <script type="text/javascript" src="Assignment_1/js/main.js"></script>
+    <title>Jorge_Monge_Assessment_1_ICT-442</title>
+</head>
+
+<body>
+
+    <!--*** NAVIGATION BAR ***-->
+    <nav class="w3-bar w3-indigo navbar-jm">
+        <a href="#" id="home" class="w3-bar-item w3-button w3-xlarge page_link">Home</a>
+        <div class="w3-dropdown-hover">
+            <button class="w3-button w3-xlarge">Assignments</button>
+            <div class="w3-dropdown-content w3-bar-block w3-border">
+                <a href="#" id="assignment_1" class="w3-bar-item w3-button w3-xlarge page_link">Assignment 1</a>
+                <a href="Assignment_2/index.html" id="assignment_2" class="w3-bar-item w3-button w3-xlarge page_link">Assignment 2</a>
+            </div>
+        </div>
+    </nav>
+
+    <!--*** HOME PAGE ***-->
+    <!--Sections will be hidden by default. The "display! order will come from JS-->
+    <article id="article_home" class="home w3-container page static_footer show">
+        <h1>University of Calgary Continuing Education</h1>
+        <p>This website contains the assignment submissions for course ICT-442 Javascript and the DOM</p>
+        <p>Student: Jorge Luis Monge Blanco</p>
+        <p>2019</p>
+        <a class="unsplash_link" href="https://unsplash.com/@emilep?utm_medium=referral&amp;utm_campaign=photographer-credit&amp;utm_content=creditBadge" target="_blank" rel="noopener noreferrer" title="Image by Émile Perron"><span><svg xmlns="http://www.w3.org/2000/svg" id="unsplash_svg_1" viewBox="0 0 32 32">
+                    <title>unsplash-logo</title>
+                    <path d="M10 9V0h12v9H10zm12 5h10v18H0V14h10v9h12v-9z"></path>
+                </svg></span><span id="unsplash_span_2">Émile Perron</span></a>
+    </article>
+
+    <!--*** ASSIGNMENT 1 SECTION ***-->
+    <!--Sections will be hidden by default. The "display! order will come from JS-->
+    <article id="article_assignment_1" class="assignment_1 w3-container page dynamic_footer hide">
+        <h1>Counter Up &amp; Down</h1>
+        <!--<section id="message1">
+            <p>There is no need to refresh the page to run the tool successively. Just enter the new numbers and hit 'Run it!'</p>
+        </section>-->
+        <form id="counterFormId" class="w3-container">
+            <label for="startValueId" class="w3-wide counter">Start value: </label>
+            <input id="startValueId" type="text" name="startValue" placeholder="Enter an integer or decimal number, positive or negative" autofocus=true class="w3-input w3-section w3-round-large" required>
+            <label for="endValueId" class="w3-wide counter">End value: </label>
+            <input id="endValueId" type="text" name="endValue" placeholder="Enter an integer or decimal number, positive or negative" class="w3-input w3-section w3-round-large" required>
+            <label for="incrementValueId" class="w3-wide counter">Increment value: </label>
+            <input id="incrementValueId" type="text" name="incrementValue" placeholder="Enter an integer or decimal number, positive or negative" class="w3-input w3-section w3-round-large" required>
+
+            <button id="counterSubmitId" class="w3-btn w3-round-xxlarge w3-indigo w3-hover-orange w3-xxlarge w3-ripple w3-margin" type="button">Run it!</button>
+            <button id="counterClearId" class="w3-btn w3-round-xxlarge w3-indigo w3-hover-orange w3-xxlarge w3-ripple w3-margin">Clear</button>
+        </form>
+        <!--Button linking to top of page-->
+        <a href="#" class="hide go_top-jm">
+            <img id="go_top_arrow" src="images/go_top_orange_shadow.png" alt="Scroll to top of page" height="50px" width="50px">
+        </a>
+
+        <!--Warning pop-up when values introduced are incorrect.-->
+        <section id="wrong_input_panel" class="w3-modal warn_panel-jm hide">
+            <div class="w3-modal-content w3-red">
+                <div class="w3-container">
+                    <span id="" class="w3-xlarge w3-right modal_close hide">&times;</span>
+                    <p class="w3-xlarge">The values introduced are not correct!</p>
+                </div>
+            </div>
+        </section>
+
+        <!--The element below will be populated by JS when the
+        'Run it!' button is pressed-->
+        <section id="numContainer"></section>
+    </article>
+    <footer id="footerId" class="static">&copy; Copyright by Jorge Monge</footer>
+</body>
+
+</html>
