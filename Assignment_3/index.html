@@ -1,0 +1,61 @@
+<!--
+-- ICT 442 - Javascript and the DOM - Assignment 2
+-- February 12th, 2019
+
+-- Student's first name: Jorge Luis
+-- Student's last name: Monge Blanco
+-- email: jorge.monge.bgis@gmail.com
+-- email: gis@jorgemonge.ca
+-- hosted version of this page: https://tender-leavitt-ed94ae.netlify.com/
+-- Date Submitted: 2019 February 12
+--
+-- *** NOTES ***
+-- External CSS and JS files
+-- All custom behaviour build with vanilla Javascript
+-- External CSS frameworks: Lots
+-->
+
+<!DOCTYPE html>
+
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.3.4/dist/leaflet.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.3.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css" />
+    <link rel="stylesheet" href="https://rawcdn.githack.com/python-visualization/folium/master/folium/templates/leaflet.awesome.rotate.css" />
+    <link rel="stylesheet" href="css/w3.css">
+    <link rel="stylesheet" href="css/main.css" />
+    <meta name="viewport" content="width=device-width,
+        initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    
+    <!--*** This is the good stuff ***-->
+    <script type="text/javascript" src="js/main.js"></script>
+    
+</head>
+
+<body>
+    <!--Map container-->
+    <div class="folium-map" id="main_map"></div>
+    <button id="insert_marker" class="btn btn-primary" title="After clicking this button, click on the desired position on the map">Insert New Location</button>
+    
+    <!--Insert new location information - FORM-->
+    <div id="new_marker_container" class="hide">
+        <div id="marker_name" class="form-group">
+            <label for="marker_name_input">Name of Point of Interest:</label>
+            <input type="text" class="form-control" id="marker_name_input">
+        </div>
+        <div id="marker_text" class="form-group">
+            <label for="marker_text_input">What do you want to say about this location?</label>
+            <textarea class="form-control" rows="5" id="marker_text_input"></textarea>
+        </div>
+        <button type="submit" id="submit_marker" class="btn btn-primary">Submit</button>
+        <button type="submit" id="cancel_marker" class="btn btn-primary">Cancel</button>
+    </div>
+
+</body>
