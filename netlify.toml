@@ -4,4 +4,4 @@
 [build]
 functions = "lambda"
 
-environment = { DB_USER = "biflpkhu", DB_HOST = "baasu.db.elephantsql.com", DB_DATABASE =  "biflpkhu", DB_PASSWORD =  "hmkS-pad-WLwC-6weDRnFsFJweRkwk21", DB_PORT = "5432" }
+#environment = { DB_USER = "biflpkhu", DB_HOST = "baasu.db.elephantsql.com", DB_DATABASE =  "biflpkhu", DB_PASSWORD =  "hmkS-pad-WLwC-6weDRnFsFJweRkwk21", DB_PORT = "5432" }
