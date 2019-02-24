@@ -10,13 +10,28 @@ var urlBack = "/.netlify/functions/pg_connect"
 // SQL query for fetching names and texts of all markers
 var selectAllQuery = "SELECT poi_name, poi_text, date_uploaded, poi_lat, poi_lon FROM json_ict442";
 
+// SQL query for inserting a marker in the database
+function generateInsertQuery(poi_name, poi_text, poi_lat, _poi_lon) {
+    // This function accepts the new marker values, and returns the appropriate
+    // SQL string to be executed against the database
+    return `INSERT INTO json_ict442 (poi_name, poi_text, poi_lat, poi_lon, date_uploaded)
+            VALUES (${poi_name}, ${poi_text}, ${poi_lat}, ${poi_lon}, (SELECT NOW()))`;
+};
+
+let count = 10,
+    price = 0.25,
+    message = passthru`${count} items cost $${(count * price).toFixed(2)}.`;
+
+console.log(message);       // "10 items cost $2.50."
+var insertQuery = "INSERT INTO json_ict442 (poi_name, poi_text, poi_lat, poi_lon) VALUES (
+    
 // Tiles from different providers
 var openStreetXYZ = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 var googleMapsXYZ = 'http://www.google.cn/maps/vt?lyrs=s@189&gl=cn&x={x}&y={y}&z={z}';
 var bounds = null;
 var layerWidget = null;
 
-// Leaflet map object
+// Leaflet Map object
 var main_map = null;
 // DOM container for the map
 var main_map_container = null;
@@ -32,6 +47,9 @@ var submit_marker = null;
 var cancel_marker = null;
 // Actual Leaflet marker for the location being entered by the user
 var marker = null;
+// Pseudo-marker (not an actual instance of the Leaflet class),
+// used to store point properties and send them to the database
+var point = {};
 // DOM element corresponding to the marker name input
 var marker_name_input = null;
 // DOM element corresponding to the marker text input
@@ -88,8 +106,25 @@ function getMarkers() {
     })
 };
 
+function sendMarkerDatabase(marker) {
+    // This function accepts an object (a marker) as the only
+    // argument, and stores it in the database
+    insertQuery = generateInsertQuery(marker.poi_name,
+                                      marker.poi_text,
+                                      marker.poi_lat,
+                                      marker.poi_lon);
+    httpPerformRequest(urlBack,
+        'POST',
+         JSON.stringify({dbQuery: insertQuery}))
+    .then((res) => {
+            console.log("Number of records added: " + res.rowCount);});
+
+};
+
 
 function readInsertMarkers(markersArray) {
+    // This function accepts an array of markers (objects) as the
+    // only parameter, and inserts them in the map
     markersArray.forEach(marker => {
         L.marker([marker.poi_lat, marker.poi_lon]).addTo(main_map);
     });
@@ -199,6 +234,14 @@ function submitMarker() {
     // Bind a popup event to the newly created marker
     //marker.bindPopup(`<h3>${ marker_name }</h3><p>${ marker_text }</p>`).openPopup();
     marker.bindPopup(markerHtml(marker_name, marker_text)).openPopup();
+    
+    // Now, store the newly-input marker into the back-end database, by
+    // invoking the sendMarkerDatabase function
+    point = {poi_name: marker_name, poi_text: marker_text,
+             poi_lat: marker._latlng.lat, poi_lon: marker._latlng.lng};
+    
+    sendMarkerDatabase(point);
+    
     // Hide the form to introduce marker details
     new_marker_form.classList.replace("show", "hide");
     // Empty the form so it looks good when re-opened
