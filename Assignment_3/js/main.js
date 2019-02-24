@@ -8,7 +8,7 @@ L_DISABLE_3D = false;
 var urlBack = "/.netlify/functions/pg_connect"
 
 // SQL query for fetching names and texts of all markers
-var selectAllQuery = "SELECT poi_name, poi_text, date_uploaded, poi_lat, poi_lon FROM json_ict442";
+var selectAllQuery = "SELECT poi_name, poi_text, poi_lat, poi_lon, date_uploaded FROM json_ict442";
 
 // SQL query for inserting a marker in the database
 function generateInsertQuery(poi_name, poi_text, poi_lat, poi_lon) {
@@ -81,7 +81,9 @@ async function httpPerformRequest(url, httpMethod, httpBody) {
 
 
 function getMarkers() {
-
+    // This function connects to the database in the back-end,
+    // obtains all the markers and stores them in the 'rows' object.
+    
     httpPerformRequest(urlBack,
         'POST',
          JSON.stringify({dbQuery: selectAllQuery}))
@@ -89,14 +91,26 @@ function getMarkers() {
         var rows = data.rows;
         // Insert the markers in the map
         readInsertMarkers(rows);
-        
+        console.log("*** RECORDS FROM THE DATABASE ***")
+        console.table(rows);
+        returns rows;
+        /*
         rows.forEach(marker => {
             console.log("MARKER NAME: " + marker.poi_name);
             console.log("MARKER TEXT: " + marker.poi_text);
             console.log("MARKER LATITUDE: " + marker.poi_lat);
             console.log("MARKER LONGITUDE: " + marker.poi_lon);
+            */
         });
     })
+};
+
+function drawMarkers(markersArray) {
+    // This function accepts an array of markers (objects) as the
+    // only parameter, and inserts them in the map
+    markersArray.forEach(marker => {
+        L.marker([marker.poi_lat, marker.poi_lon]).addTo(main_map);
+    });
 };
 
 function sendMarkerDatabase(marker) {
@@ -116,13 +130,7 @@ function sendMarkerDatabase(marker) {
 };
 
 
-function readInsertMarkers(markersArray) {
-    // This function accepts an array of markers (objects) as the
-    // only parameter, and inserts them in the map
-    markersArray.forEach(marker => {
-        L.marker([marker.poi_lat, marker.poi_lon]).addTo(main_map);
-    });
-};
+
 
 
 // Wait until all DOM elements are ready, so that their
@@ -143,10 +151,12 @@ function initMap() {
     cancel_marker = document.getElementById("cancel_marker");
     
     // Get the markers from the database
-    getMarkers();
+    var rows = getMarkers();
+    // Draw the markers in the map
+    drawMarkers(rows);
     
     // Change the cursor type when the 'Insert New Location' button is clicked
-     insert_marker_btn.addEventListener("click", prepInsertMarker);
+    insert_marker_btn.addEventListener("click", prepInsertMarker);
     
     // Event listeners for the buttons in the new-marker-data form
     submit_marker.addEventListener("click", submitMarker);
