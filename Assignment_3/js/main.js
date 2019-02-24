@@ -85,7 +85,7 @@ async function getMarkers() {
     // This function connects to the database in the back-end,
     // obtains all the markers and stores them in the 'rows' object.
 
-    return httpPerformRequest(urlBack,
+    return await httpPerformRequest(urlBack,
             'POST',
             JSON.stringify({
                 dbQuery: selectAllQuery
@@ -156,7 +156,7 @@ function initMap() {
     cancel_marker = document.getElementById("cancel_marker");
 
     // Get the markers from the database
-    var rows = await getMarkers().rows;
+    var rows = getMarkers().rows;
     console.log("ROWS: ");
     console.log(rows);
     // Draw the markers in the map
