@@ -17,13 +17,6 @@ function generateInsertQuery(poi_name, poi_text, poi_lat, _poi_lon) {
     return `INSERT INTO json_ict442 (poi_name, poi_text, poi_lat, poi_lon, date_uploaded)
             VALUES (${poi_name}, ${poi_text}, ${poi_lat}, ${poi_lon}, (SELECT NOW()))`;
 };
-
-let count = 10,
-    price = 0.25,
-    message = passthru`${count} items cost $${(count * price).toFixed(2)}.`;
-
-console.log(message);       // "10 items cost $2.50."
-var insertQuery = "INSERT INTO json_ict442 (poi_name, poi_text, poi_lat, poi_lon) VALUES (
     
 // Tiles from different providers
 var openStreetXYZ = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
