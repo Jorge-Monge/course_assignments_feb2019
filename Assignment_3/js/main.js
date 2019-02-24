@@ -90,7 +90,7 @@ async function getMarkers() {
             JSON.stringify({
                 dbQuery: selectAllQuery
             }))
-    /*
+        /*
         .then(data => {
             var rows = data.rows;
             console.log("*** RECORDS FROM THE DATABASE ***")
@@ -156,7 +156,7 @@ function initMap() {
     cancel_marker = document.getElementById("cancel_marker");
 
     // Get the markers from the database
-    var rows = getMarkers().rows;
+    rows = getMarkers().then((data) => {return data.rows;};
     console.log("ROWS: ");
     console.log(rows);
     // Draw the markers in the map
