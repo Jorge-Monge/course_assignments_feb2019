@@ -15,7 +15,7 @@ function generateInsertQuery(poi_name, poi_text, poi_lat, poi_lon) {
     // This function accepts the new marker values, and returns the appropriate
     // SQL string to be executed against the database
     return `INSERT INTO json_ict442 (poi_name, poi_text, poi_lat, poi_lon, date_uploaded)
-            VALUES (${poi_name}, ${poi_text}, ${poi_lat}, ${poi_lon}, (SELECT NOW()))`;
+            VALUES ('${poi_name}', '${poi_text}', ${poi_lat}, ${poi_lon}, (SELECT NOW()))`;
 };
     
 // Tiles from different providers
