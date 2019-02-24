@@ -93,7 +93,7 @@ function getMarkers() {
         readInsertMarkers(rows);
         console.log("*** RECORDS FROM THE DATABASE ***")
         console.table(rows);
-        returns rows;
+        return rows;
         /*
         rows.forEach(marker => {
             console.log("MARKER NAME: " + marker.poi_name);
