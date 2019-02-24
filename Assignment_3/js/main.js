@@ -149,7 +149,7 @@ function initMap() {
     cancel_marker = document.getElementById("cancel_marker");
     
     // Get the markers from the database
-    var rows = getMarkers();
+    var rows = await getMarkers();
     console.log("ROWS: ");
     console.log(rows);
     // Draw the markers in the map
