@@ -102,10 +102,11 @@ function getMarkers() {
 function sendMarkerDatabase(marker) {
     // This function accepts an object (a marker) as the only
     // argument, and stores it in the database
-    insertQuery = generateInsertQuery(marker.poi_name,
+    var insertQuery = generateInsertQuery(marker.poi_name,
                                       marker.poi_text,
                                       marker.poi_lat,
                                       marker.poi_lon);
+    console.log("insertQuery: " + insertQuery);
     httpPerformRequest(urlBack,
         'POST',
          JSON.stringify({dbQuery: insertQuery}))
