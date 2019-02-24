@@ -89,8 +89,6 @@ function getMarkers() {
          JSON.stringify({dbQuery: selectAllQuery}))
     .then(data => {
         var rows = data.rows;
-        // Insert the markers in the map
-        readInsertMarkers(rows);
         console.log("*** RECORDS FROM THE DATABASE ***")
         console.table(rows);
         return rows;
