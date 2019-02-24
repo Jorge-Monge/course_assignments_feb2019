@@ -150,6 +150,8 @@ function initMap() {
     
     // Get the markers from the database
     var rows = getMarkers();
+    console.log("ROWS: ");
+    console.log(rows);
     // Draw the markers in the map
     drawMarkers(rows);
     
