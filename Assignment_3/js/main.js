@@ -159,11 +159,8 @@ function initMap() {
     cancel_marker = document.getElementById("cancel_marker");
 
     // Get the markers from the database
-    rows = getMarkers().then((data) => {return data.rows;});
-    console.log("ROWS: ");
-    console.log(rows);
-    // Draw the markers in the map
-    drawMarkers(rows);
+    getMarkers().then((data) => {return data.rows;}).then((rows) => {drawMarkers(rows);});
+    
 
     // Change the cursor type when the 'Insert New Location' button is clicked
     insert_marker_btn.addEventListener("click", prepInsertMarker);
