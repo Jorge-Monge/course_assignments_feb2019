@@ -110,6 +110,9 @@ async function getMarkers() {
 function drawMarkers(markersArray) {
     // This function accepts an array of markers (objects) as the
     // only parameter, and inserts them in the map
+    console.log("*** INSIDE drawMarkers ***");
+    console.log(typeof(markersArray));
+    console.log(markersArray);
     markersArray.forEach(marker => {
         L.marker([marker.poi_lat, marker.poi_lon]).addTo(main_map);
     });
