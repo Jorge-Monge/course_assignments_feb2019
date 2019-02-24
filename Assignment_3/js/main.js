@@ -81,7 +81,7 @@ async function httpPerformRequest(url, httpMethod, httpBody) {
 }
 
 
-function async getMarkers() {
+async function getMarkers() {
     // This function connects to the database in the back-end,
     // obtains all the markers and stores them in the 'rows' object.
 
