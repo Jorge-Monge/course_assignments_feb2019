@@ -11,7 +11,7 @@ var urlBack = "/.netlify/functions/pg_connect"
 var selectAllQuery = "SELECT poi_name, poi_text, date_uploaded, poi_lat, poi_lon FROM json_ict442";
 
 // SQL query for inserting a marker in the database
-function generateInsertQuery(poi_name, poi_text, poi_lat, _poi_lon) {
+function generateInsertQuery(poi_name, poi_text, poi_lat, poi_lon) {
     // This function accepts the new marker values, and returns the appropriate
     // SQL string to be executed against the database
     return `INSERT INTO json_ict442 (poi_name, poi_text, poi_lat, poi_lon, date_uploaded)
