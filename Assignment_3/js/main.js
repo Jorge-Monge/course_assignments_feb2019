@@ -86,35 +86,36 @@ async function getMarkers() {
     // obtains all the markers and stores them in the 'rows' object.
 
     return await httpPerformRequest(urlBack,
-            'POST',
-            JSON.stringify({
-                dbQuery: selectAllQuery
-            }))
-        /*
-        .then(data => {
-            var rows = data.rows;
-            console.log("*** RECORDS FROM THE DATABASE ***")
-            console.table(rows);
-            return rows;
+        'POST',
+        JSON.stringify({
+            dbQuery: selectAllQuery
+        }))
+    /*
+    .then(data => {
+        var rows = data.rows;
+        console.log("*** RECORDS FROM THE DATABASE ***")
+        console.table(rows);
+        return rows;
+        
+        rows.forEach(marker => {
+            console.log("MARKER NAME: " + marker.poi_name);
+            console.log("MARKER TEXT: " + marker.poi_text);
+            console.log("MARKER LATITUDE: " + marker.poi_lat);
+            console.log("MARKER LONGITUDE: " + marker.poi_lon);
             
-            rows.forEach(marker => {
-                console.log("MARKER NAME: " + marker.poi_name);
-                console.log("MARKER TEXT: " + marker.poi_text);
-                console.log("MARKER LATITUDE: " + marker.poi_lat);
-                console.log("MARKER LONGITUDE: " + marker.poi_lon);
-                
-            });
-        })*/
+        });
+    })*/
 };
 
 function drawMarkers(markersArray) {
     // This function accepts an array of markers (objects) as the
     // only parameter, and inserts them in the map
-    console.log("*** INSIDE drawMarkers ***");
-    console.log(typeof(markersArray));
-    console.log(markersArray);
+    console.log("*** DRAWING MARKERS FROM THE DATABASE ***");
+    console.table(markersArray);
     markersArray.forEach(marker => {
-        L.marker([marker.poi_lat, marker.poi_lon]).addTo(main_map);
+        var m = L.marker([marker.poi_lat, marker.poi_lon]).addTo(main_map);
+        // Bind a popup event to the newly created marker
+        m.bindPopup(markerHtml(marker.poi_name, marker.poi_text));
     });
 };
 
@@ -159,8 +160,12 @@ function initMap() {
     cancel_marker = document.getElementById("cancel_marker");
 
     // Get the markers from the database
-    getMarkers().then((data) => {return data.rows;}).then((rows) => {drawMarkers(rows);});
-    
+    getMarkers().then((data) => {
+        return data.rows;
+    }).then((rows) => {
+        drawMarkers(rows);
+    });
+
 
     // Change the cursor type when the 'Insert New Location' button is clicked
     insert_marker_btn.addEventListener("click", prepInsertMarker);
