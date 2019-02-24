@@ -100,8 +100,8 @@ function getMarkers() {
             console.log("MARKER TEXT: " + marker.poi_text);
             console.log("MARKER LATITUDE: " + marker.poi_lat);
             console.log("MARKER LONGITUDE: " + marker.poi_lon);
-            */
-        });
+            
+        });*/
     })
 };
 
