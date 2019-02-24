@@ -17,7 +17,7 @@ function generateInsertQuery(poi_name, poi_text, poi_lat, poi_lon) {
     return `INSERT INTO json_ict442 (poi_name, poi_text, poi_lat, poi_lon, date_uploaded)
             VALUES ('${poi_name}', '${poi_text}', ${poi_lat}, ${poi_lon}, (SELECT NOW()))`;
 };
-    
+
 // Tiles from different providers
 var openStreetXYZ = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 var googleMapsXYZ = 'http://www.google.cn/maps/vt?lyrs=s@189&gl=cn&x={x}&y={y}&z={z}';
@@ -29,7 +29,7 @@ var main_map = null;
 // DOM container for the map
 var main_map_container = null;
 // 'Insert New Location' button
-var  insert_marker_btn = null;
+var insert_marker_btn = null;
 // JSON-type file that will store the locations
 var geoJSON = {};
 // DOM element that pops up when a new location is entered
@@ -65,42 +65,46 @@ var markerHtml = (marker_name, marker_text) => {
             <footer class="w3-container w3-blue">
             <h5>Footer</h5>
             </footer>
-            </div>`};
+            </div>`
+};
 
 
 async function httpPerformRequest(url, httpMethod, httpBody) {
     return (await fetch(url, {
-            method: httpMethod,
-            headers: {
-                'Accept': "application/json, text/plain, */*",
-                'Content-type': 'application/json',
-            },
-            body: httpBody
-        })).json();
+        method: httpMethod,
+        headers: {
+            'Accept': "application/json, text/plain, */*",
+            'Content-type': 'application/json',
+        },
+        body: httpBody
+    })).json();
 }
 
 
 function getMarkers() {
     // This function connects to the database in the back-end,
     // obtains all the markers and stores them in the 'rows' object.
-    
-    httpPerformRequest(urlBack,
-        'POST',
-         JSON.stringify({dbQuery: selectAllQuery}))
-    .then(data => {
-        var rows = data.rows;
-        console.log("*** RECORDS FROM THE DATABASE ***")
-        console.table(rows);
-        return rows;
-        /*
-        rows.forEach(marker => {
-            console.log("MARKER NAME: " + marker.poi_name);
-            console.log("MARKER TEXT: " + marker.poi_text);
-            console.log("MARKER LATITUDE: " + marker.poi_lat);
-            console.log("MARKER LONGITUDE: " + marker.poi_lon);
+
+    return await httpPerformRequest(urlBack,
+            'POST',
+            JSON.stringify({
+                dbQuery: selectAllQuery
+            }))
+    /*
+        .then(data => {
+            var rows = data.rows;
+            console.log("*** RECORDS FROM THE DATABASE ***")
+            console.table(rows);
+            return rows;
             
-        });*/
-    })
+            rows.forEach(marker => {
+                console.log("MARKER NAME: " + marker.poi_name);
+                console.log("MARKER TEXT: " + marker.poi_text);
+                console.log("MARKER LATITUDE: " + marker.poi_lat);
+                console.log("MARKER LONGITUDE: " + marker.poi_lon);
+                
+            });
+        })*/
 };
 
 function drawMarkers(markersArray) {
@@ -115,15 +119,18 @@ function sendMarkerDatabase(marker) {
     // This function accepts an object (a marker) as the only
     // argument, and stores it in the database
     var insertQuery = generateInsertQuery(marker.poi_name,
-                                      marker.poi_text,
-                                      marker.poi_lat,
-                                      marker.poi_lon);
+        marker.poi_text,
+        marker.poi_lat,
+        marker.poi_lon);
     console.log("insertQuery: " + insertQuery);
     httpPerformRequest(urlBack,
-        'POST',
-         JSON.stringify({dbQuery: insertQuery}))
-    .then((res) => {
-            console.log("Number of records added: " + res.rowCount);});
+            'POST',
+            JSON.stringify({
+                dbQuery: insertQuery
+            }))
+        .then((res) => {
+            console.log("Number of records added: " + res.rowCount);
+        });
 
 };
 
@@ -141,23 +148,23 @@ function initMap() {
     /* This is the main function.
        It draws a Leaflet map, and add the necessary event listeners
        for some DOM elements */
-    
+
     main_map_container = document.getElementById("main_map");
     insert_marker_btn = document.getElementById("insert_marker");
     new_marker_form = document.getElementById("new_marker_container");
     submit_marker = document.getElementById("submit_marker");
     cancel_marker = document.getElementById("cancel_marker");
-    
+
     // Get the markers from the database
-    var rows = await getMarkers();
+    var rows = getMarkers().rows;
     console.log("ROWS: ");
     console.log(rows);
     // Draw the markers in the map
     drawMarkers(rows);
-    
+
     // Change the cursor type when the 'Insert New Location' button is clicked
     insert_marker_btn.addEventListener("click", prepInsertMarker);
-    
+
     // Event listeners for the buttons in the new-marker-data form
     submit_marker.addEventListener("click", submitMarker);
     cancel_marker.addEventListener("click", cancelMarker);
@@ -205,7 +212,7 @@ function mapClicked(event) {
     // This function inserts a new Leaflet marker in the map.
     // Besides, it handles some DOM actions (buttons disabled, forms
     // displaying, cursor type changed, etc.)
-    
+
     // Add a new marker on the position clicked, but only if the
     // 'Insert New Location' button has been clicked first.
     if (main_map_container.classList.contains("crosshair_enabled")) {
@@ -217,7 +224,7 @@ function mapClicked(event) {
         // Change the cursor icon back to the icon of a hand
         main_map_container.classList.toggle("crosshair_enabled");
         // Disable the 'Insert New Location' button
-        insert_marker_btn.disabled = true;   
+        insert_marker_btn.disabled = true;
     }
 }
 
@@ -231,21 +238,25 @@ function submitMarker() {
        
        TODO: Consolidate the marker location and data and store it
        in a database in a cloud server */
-    
+
     // Get the marker information entered by the user through the form
     marker_name = document.getElementById("marker_name_input").value;
     marker_text = document.getElementById("marker_text_input").value;
     // Bind a popup event to the newly created marker
     //marker.bindPopup(`<h3>${ marker_name }</h3><p>${ marker_text }</p>`).openPopup();
     marker.bindPopup(markerHtml(marker_name, marker_text)).openPopup();
-    
+
     // Now, store the newly-input marker into the back-end database, by
     // invoking the sendMarkerDatabase function
-    point = {poi_name: marker_name, poi_text: marker_text,
-             poi_lat: marker._latlng.lat, poi_lon: marker._latlng.lng};
-    
+    point = {
+        poi_name: marker_name,
+        poi_text: marker_text,
+        poi_lat: marker._latlng.lat,
+        poi_lon: marker._latlng.lng
+    };
+
     sendMarkerDatabase(point);
-    
+
     // Hide the form to introduce marker details
     new_marker_form.classList.replace("show", "hide");
     // Empty the form so it looks good when re-opened
@@ -259,7 +270,7 @@ function cancelMarker() {
     /* This function removes the just-inserted marker.
        Also, it re-enables the 'Insert New Location' button and
        hides the form */
-    
+
     // Remove the marker just drawn
     main_map.removeLayer(marker);
     // Hide the form to introduce marker details
