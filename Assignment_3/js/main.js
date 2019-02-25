@@ -64,7 +64,7 @@ var markerHtml = (marker_name, marker_text) => {
             </div>
             <footer class="w3-container w3-blue">
             <h5>Footer</h5>
-            <input type="image" src="images/delete-png-icon-7.png" />
+            <input type="image" src="images/delete-png-icon-7.png" class="delete_marker_icon"/>
             </footer>
             </div>`
 };

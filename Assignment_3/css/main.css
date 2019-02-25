@@ -42,6 +42,9 @@ h3 {
     left: 70px;
 }
 
+.delete_marker_image {
+    width: 15px;
+}
 .show {
     display: block;
 }
