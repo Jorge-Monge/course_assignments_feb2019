@@ -57,13 +57,14 @@ var marker_text_input = null;
 var markerHtml = (marker_name, marker_text) => {
     return `<div class="w3-card-4">
             <header class="w3-container w3-blue">
-            <h1>${marker_name}</h1>
+            <h5>${marker_name}</h5>
             </header>
             <div class="w3-container">
             <p>${marker_text}</p>
             </div>
             <footer class="w3-container w3-blue">
             <h5>Footer</h5>
+            <input type="image" src="images/delete-png-icon-7.png" />
             </footer>
             </div>`
 };
