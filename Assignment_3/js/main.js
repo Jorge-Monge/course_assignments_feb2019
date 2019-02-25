@@ -71,8 +71,11 @@ var markerHtml = (marker_id, marker_name, marker_text, datetime_uploaded) => {
             <p>${marker_text}</p>
             </div>
             <footer class="w3-container w3-blue">
-            <p>Id.# ${marker_id} - ${datetime_uploaded} UTC</p>
+            <p>Id.# ${marker_id}</p>
+            <div class="marker_popup_footer">
+            <p>${datetime_uploaded} UTC</p>
             <input type="image" src="images/delete-png-icon-7.png" class="delete_marker"/>
+            </div>
             </footer>
             </div>`
 };
