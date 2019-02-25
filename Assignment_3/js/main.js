@@ -8,7 +8,14 @@ L_DISABLE_3D = false;
 var urlBack = "/.netlify/functions/pg_connect"
 
 // SQL query for fetching names and texts of all markers
-var selectAllQuery = "SELECT poi_name, poi_text, poi_lat, poi_lon, datetime_uploaded FROM json_ict442";
+var selectAllQuery = `SELECT poi_name,
+                             poi_text,
+                             poi_lat,
+                             poi_lon,
+                             CONCAT(datetime_uploaded::date,
+                                ' | ',
+                                DATE_TRUNC('SECONDS', datetime_uploaded)::time) AS datetime_uploaded
+                      FROM json_ict442`;
 
 // SQL query for inserting a marker in the database
 function generateInsertQuery(poi_name, poi_text, poi_lat, poi_lon) {
@@ -54,7 +61,7 @@ var marker_text_input = null;
 // Arrow function the, when invoked, will
 // return an HTML block where the variables
 // names (function arguments) will have been evaluated
-var markerHtml = (marker_name, marker_text) => {
+var markerHtml = (marker_id, marker_name, marker_text, datetime_uploaded) => {
     return `<div class="w3-card-4">
             <header class="w3-container w3-blue">
             <h5>${marker_name}</h5>
@@ -63,7 +70,7 @@ var markerHtml = (marker_name, marker_text) => {
             <p>${marker_text}</p>
             </div>
             <footer class="w3-container w3-blue">
-            <h5>Footer</h5>
+            <p>Id.# ${marker_id} - ${datetime_uploaded} UTC</p>
             <input type="image" src="images/delete-png-icon-7.png" class="delete_marker"/>
             </footer>
             </div>`
@@ -96,12 +103,14 @@ async function getMarkers() {
 function drawMarkers(markersArray) {
     // This function accepts an array of markers (objects) as the
     // only parameter, and inserts them in the map
-    console.log("*** DRAWING MARKERS FROM THE DATABASE ***");
-    console.table(markersArray);
+
     markersArray.forEach(marker => {
         var m = L.marker([marker.poi_lat, marker.poi_lon]).addTo(main_map);
         // Bind a popup event to the newly created marker
-        m.bindPopup(markerHtml(marker.poi_name, marker.poi_text));
+        m.bindPopup(markerHtml(marker.gid, marker.poi_name, marker.poi_text, marker_datetime_uploaded));
+
+        console.log("*** DRAWING MARKERS FROM THE DATABASE ***");
+        console.table(markersArray);
     });
 };
 
@@ -152,8 +161,7 @@ function initMap() {
         // Event listeners for the buttons in the new-marker-data form
         else if (event.target.matches("#submit_marker")) {
             submitMarker(event);
-        }
-        else if (event.target.matches("#cancel_marker")) {
+        } else if (event.target.matches("#cancel_marker")) {
             cancelMarker(event);
         }
     }, false);
