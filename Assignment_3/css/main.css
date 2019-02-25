@@ -10,6 +10,10 @@ h3 {
     text-align: center;
 }
 
+p.custom_popup_html {
+    margin: 5px 0;
+}
+
 #main_map {
     position: relative;
     width: 100%;
