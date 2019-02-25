@@ -63,7 +63,7 @@ var marker_text_input = null;
 // return an HTML block where the variables
 // names (function arguments) will have been evaluated
 var markerHtml = (marker_id, marker_name, marker_text, datetime_uploaded) => {
-    return `<div class="w3-card-4">
+    return `<div class="w3-card-4 custom_popup_html">
             <header class="w3-container w3-blue">
             <h5>${marker_name}</h5>
             </header>
@@ -253,9 +253,10 @@ function submitMarker() {
     // Get the marker information entered by the user through the form
     marker_name = document.getElementById("marker_name_input").value;
     marker_text = document.getElementById("marker_text_input").value;
+    var dt = new Date();
+    var utcDate = dt.toUTCString();
     // Bind a popup event to the newly created marker
-    //marker.bindPopup(`<h3>${ marker_name }</h3><p>${ marker_text }</p>`).openPopup();
-    marker.bindPopup(markerHtml(marker_name, marker_text)).openPopup();
+    marker.bindPopup(markerHtml("N/A", marker_name, marker_text, utcDate)).openPopup();
 
     // Now, store the newly-input marker into the back-end database, by
     // invoking the sendMarkerDatabase function
