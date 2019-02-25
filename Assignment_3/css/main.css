@@ -47,7 +47,9 @@ h3 {
 }
 
 .marker_popup_footer {
-    
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: space-between;
 }
 .show {
     display: block;
