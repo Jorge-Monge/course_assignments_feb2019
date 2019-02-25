@@ -64,7 +64,7 @@ var markerHtml = (marker_name, marker_text) => {
             </div>
             <footer class="w3-container w3-blue">
             <h5>Footer</h5>
-            <input type="image" src="images/delete-png-icon-7.png" class="delete_marker_icon"/>
+            <input type="image" src="images/delete-png-icon-7.png" class="delete_marker"/>
             </footer>
             </div>`
 };
@@ -91,21 +91,6 @@ async function getMarkers() {
         JSON.stringify({
             dbQuery: selectAllQuery
         }))
-    /*
-    .then(data => {
-        var rows = data.rows;
-        console.log("*** RECORDS FROM THE DATABASE ***")
-        console.table(rows);
-        return rows;
-        
-        rows.forEach(marker => {
-            console.log("MARKER NAME: " + marker.poi_name);
-            console.log("MARKER TEXT: " + marker.poi_text);
-            console.log("MARKER LATITUDE: " + marker.poi_lat);
-            console.log("MARKER LONGITUDE: " + marker.poi_lon);
-            
-        });
-    })*/
 };
 
 function drawMarkers(markersArray) {
@@ -157,8 +142,21 @@ function initMap() {
     main_map_container = document.getElementById("main_map");
     insert_marker_btn = document.getElementById("insert_marker");
     new_marker_form = document.getElementById("new_marker_container");
-    submit_marker = document.getElementById("submit_marker");
-    cancel_marker = document.getElementById("cancel_marker");
+    //submit_marker = document.getElementById("submit_marker");
+    //cancel_marker = document.getElementById("cancel_marker");
+    // https://gomakethings.com/why-event-delegation-is-a-better-way-to-listen-for-events-in-vanilla-js/
+    document.addEventListener('click', function (event) {
+        if (event.target.matches(".delete_marker")) {
+            console.log("DELETING THE MARKER!!");
+        }
+        // Event listeners for the buttons in the new-marker-data form
+        else if (event.target.matches("#submit_marker")) {
+            submitMarker(event);
+        }
+        else if (event.target.matches("#cancel_marker")) {
+            cancelMarker(event);
+        }
+    }, false);
 
     // Get the markers from the database
     getMarkers().then((data) => {
@@ -170,10 +168,6 @@ function initMap() {
 
     // Change the cursor type when the 'Insert New Location' button is clicked
     insert_marker_btn.addEventListener("click", prepInsertMarker);
-
-    // Event listeners for the buttons in the new-marker-data form
-    submit_marker.addEventListener("click", submitMarker);
-    cancel_marker.addEventListener("click", cancelMarker);
 
     // Map definition
     main_map = L.map(
