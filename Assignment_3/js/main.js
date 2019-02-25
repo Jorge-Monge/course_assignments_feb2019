@@ -8,7 +8,8 @@ L_DISABLE_3D = false;
 var urlBack = "/.netlify/functions/pg_connect"
 
 // SQL query for fetching names and texts of all markers
-var selectAllQuery = `SELECT poi_name,
+var selectAllQuery = `SELECT gid,
+                             poi_name,
                              poi_text,
                              poi_lat,
                              poi_lon,
@@ -108,10 +109,9 @@ function drawMarkers(markersArray) {
         var m = L.marker([marker.poi_lat, marker.poi_lon]).addTo(main_map);
         // Bind a popup event to the newly created marker
         m.bindPopup(markerHtml(marker.gid, marker.poi_name, marker.poi_text, marker.datetime_uploaded));
-
-        console.log("*** DRAWING MARKERS FROM THE DATABASE ***");
-        console.table(markersArray);
     });
+    console.log("*** DRAWING MARKERS FROM THE DATABASE ***");
+    console.table(markersArray);
 };
 
 function sendMarkerDatabase(marker) {
