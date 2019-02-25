@@ -8,13 +8,13 @@ L_DISABLE_3D = false;
 var urlBack = "/.netlify/functions/pg_connect"
 
 // SQL query for fetching names and texts of all markers
-var selectAllQuery = "SELECT poi_name, poi_text, poi_lat, poi_lon, date_uploaded FROM json_ict442";
+var selectAllQuery = "SELECT poi_name, poi_text, poi_lat, poi_lon, datetime_uploaded FROM json_ict442";
 
 // SQL query for inserting a marker in the database
 function generateInsertQuery(poi_name, poi_text, poi_lat, poi_lon) {
     // This function accepts the new marker values, and returns the appropriate
     // SQL string to be executed against the database
-    return `INSERT INTO json_ict442 (poi_name, poi_text, poi_lat, poi_lon, date_uploaded)
+    return `INSERT INTO json_ict442 (poi_name, poi_text, poi_lat, poi_lon, datetime_uploaded)
             VALUES ('${poi_name}', '${poi_text}', ${poi_lat}, ${poi_lon}, (SELECT NOW()))`;
 };
 
