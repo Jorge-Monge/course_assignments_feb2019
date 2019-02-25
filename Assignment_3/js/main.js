@@ -107,7 +107,7 @@ function drawMarkers(markersArray) {
     markersArray.forEach(marker => {
         var m = L.marker([marker.poi_lat, marker.poi_lon]).addTo(main_map);
         // Bind a popup event to the newly created marker
-        m.bindPopup(markerHtml(marker.gid, marker.poi_name, marker.poi_text, marker_datetime_uploaded));
+        m.bindPopup(markerHtml(marker.gid, marker.poi_name, marker.poi_text, marker.datetime_uploaded));
 
         console.log("*** DRAWING MARKERS FROM THE DATABASE ***");
         console.table(markersArray);
