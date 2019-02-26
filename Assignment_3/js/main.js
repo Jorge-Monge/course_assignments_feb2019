@@ -7,7 +7,7 @@ L_DISABLE_3D = false;
 // interact with a PostgreSQL database in the cloud
 var urlBack = "/.netlify/functions/pg_connect";
 // For local debugging. Comment it out for Production
-urlBack = "http://localhost:9000/pg_connect";
+//urlBack = "http://localhost:9000/pg_connect";
 
 // SQL query for fetching names and texts of all markers
 var selectAllQuery = `SELECT gid,
