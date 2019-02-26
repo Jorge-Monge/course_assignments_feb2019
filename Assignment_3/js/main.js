@@ -5,7 +5,9 @@ L_DISABLE_3D = false;
 // URL of the back-end function
 // It is a Node JS function that is used to
 // interact with a PostgreSQL database in the cloud
-var urlBack = "/.netlify/functions/pg_connect"
+var urlBack = "/.netlify/functions/pg_connect";
+// For local debugging. Comment it out for Production
+urlBack = "http://localhost:9000/pg_connect";
 
 // SQL query for fetching names and texts of all markers
 var selectAllQuery = `SELECT gid,
@@ -84,10 +86,10 @@ var markerHtml = (marker_id, marker_name, marker_text, datetime_uploaded) => {
 async function httpPerformRequest(url, httpMethod, httpBody) {
     return (await fetch(url, {
         method: httpMethod,
-        headers: {
-            'Accept': "application/json, text/plain, */*",
-            'Content-type': 'application/json',
-        },
+        //headers: {
+            // Informs the server about the types of data that can be sent back
+            //'Accept': "application/json"//,
+        //},
         body: httpBody
     })).json();
 }
@@ -109,6 +111,14 @@ function drawMarkers(markersArray) {
     // only parameter, and inserts them in the map
 
     markersArray.forEach(marker => {
+        // Attempt to draw the markers ONLY if the have (valid) latitude and longitude values
+        // If not, break for the iteration and continue with the other records.
+        if (marker.poi_lat < 0 || marker.poi_lat >90 ||
+            marker.poi_lon < -180 || marker.poi_lon > 180 ||
+            marker.poi_lat === null || marker.poi_lon === null) {
+                return;
+            };
+            
         var m = L.marker([marker.poi_lat, marker.poi_lon]).addTo(main_map);
         // Bind a popup event to the newly created marker
         m.bindPopup(markerHtml(marker.gid, marker.poi_name, marker.poi_text, marker.datetime_uploaded));

@@ -50,10 +50,8 @@ exports.handler = async function (event, context, callback) {
         callback(null, {
             statusCode: 200,
             headers: {
-                'Accept': "application/json, text/plain, */*",
-                'Content-type': 'application/json',
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Headers': 'Origin, x-Requested-Width, Content-Type, Accept'
+                "Access-Control-Allow-Origin": '*',
+                "Access-Control-Allow-Headers": 'Origin, X-Requested-With, Content-Type, Accept'
             },
             body: JSON.stringify(response)
         }) // Returns JSON
