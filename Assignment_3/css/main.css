@@ -10,10 +10,38 @@ h3 {
     text-align: center;
 }
 
-custom_popup_html p{
+.custom_popup_html {
+    background-color: white;
+}
+.custom_popup_html p{
     margin: 5px 0;
 }
 
+.leaflet-popup-content-wrapper {
+    background: rgba(255,255,255,0);
+    box-shadow: none;
+}
+
+.leaflet-popup-tip {
+    display: none;
+}
+
+.leaflet-container a.leaflet-popup-close-button {
+    color: #006dcc;
+ }
+
+.center-all-ontop {
+    font-size: 3em;
+    color: #006dcc;
+    z-index: 1000;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -webkit-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+    
+
+}
 #main_map {
     position: relative;
     width: 100%;

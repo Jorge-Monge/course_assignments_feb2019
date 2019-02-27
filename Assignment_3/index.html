@@ -33,7 +33,10 @@
     <link rel="stylesheet" href="css/main.css" />
     <meta name="viewport" content="width=device-width,
         initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    
+
+    <!--Page icon-->
+    <link rel="icon" type="image/x-icon" href="images/favicon.ico">
+
     <!--*** This is the good stuff ***-->
     <script type="text/javascript" src="js/main.js"></script>
     
@@ -44,6 +47,10 @@
     <div class="folium-map" id="main_map"></div>
     <button id="insert_marker" class="btn btn-primary" title="After clicking this button, click on the desired position on the map">Insert New Location</button>
     
+    <!-- Spinner:
+         https://www.w3schools.com/icons/tryit.asp?filename=tryicons_fa-spinner-->
+    <div id="loading_spinner" class="center-all-ontop show fa fa-spinner fa-spin"></div>
+
     <!--Insert new location information - FORM-->
     <div id="new_marker_container" class="hide">
         <div id="marker_name" class="form-group">

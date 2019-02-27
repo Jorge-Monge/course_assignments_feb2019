@@ -23,9 +23,16 @@ var selectAllQuery = `SELECT gid,
 // SQL query for inserting a marker in the database
 function generateInsertQuery(poi_name, poi_text, poi_lat, poi_lon) {
     // This function accepts the new marker values, and returns the appropriate
-    // SQL string to be executed against the database
+    // SQL string to be executed against the database 
     return `INSERT INTO json_ict442 (poi_name, poi_text, poi_lat, poi_lon, datetime_uploaded)
             VALUES ('${poi_name}', '${poi_text}', ${poi_lat}, ${poi_lon}, (SELECT NOW()))`;
+};
+
+// SQL query for deleting a marker in the database
+function generateDeleteQuery(gid) {
+    // This function accepts the 'gid' value (unique ID) of the marker to delete,
+    // and returns the appropriate SQL string to be executed against the database 
+    return `DELETE FROM json_ict442 WHERE gid = ${gid}`;
 };
 
 // Tiles from different providers
@@ -38,6 +45,9 @@ var layerWidget = null;
 var main_map = null;
 // DOM container for the map
 var main_map_container = null;
+// rotating icon displayed until the markers are
+// fully obtained from the database
+var loading_spinner = null;
 // 'Insert New Location' button
 var insert_marker_btn = null;
 // JSON-type file that will store the locations
@@ -76,7 +86,10 @@ var markerHtml = (marker_id, marker_name, marker_text, datetime_uploaded) => {
             <p>Id.# ${marker_id}</p>
             <div class="marker_popup_footer">
             <p>${datetime_uploaded} UTC</p>
-            <input type="image" src="images/delete-png-icon-7.png" class="delete_marker"/>
+            <!-- Note that the value of the id attribute value is dynamically generated
+                 to match the marker Id. This will help to identify the element when
+                 deleting markers -->
+            <input id="${marker_id}" type="image" src="images/delete-png-icon-7.png" class="delete_marker"/>
             </div>
             </footer>
             </div>`
@@ -125,6 +138,7 @@ function drawMarkers(markersArray) {
     });
     console.log("*** DRAWING MARKERS FROM THE DATABASE ***");
     console.table(markersArray);
+    return true;
 };
 
 function sendMarkerDatabase(marker) {
@@ -146,6 +160,18 @@ function sendMarkerDatabase(marker) {
 
 };
 
+function deleteMarker(event) {
+    console.log(event.target.id);
+    console.log(generateDeleteQuery(event.target.id));
+    httpPerformRequest(urlBack,
+        'POST',
+        JSON.stringify({
+            dbQuery: generateDeleteQuery(event.target.id)
+        }))
+    .then((res) => {
+        console.log("Number of records deleted: " + res.rowCount);
+    });
+}
 
 
 
@@ -162,15 +188,21 @@ function initMap() {
        for some DOM elements */
 
     main_map_container = document.getElementById("main_map");
+    loading_spinner = document.getElementById("loading_spinner");
     insert_marker_btn = document.getElementById("insert_marker");
     new_marker_form = document.getElementById("new_marker_container");
     //submit_marker = document.getElementById("submit_marker");
     //cancel_marker = document.getElementById("cancel_marker");
+    
+    //
+    // *** DELETION OF MARKERS ***
     // https://gomakethings.com/why-event-delegation-is-a-better-way-to-listen-for-events-in-vanilla-js/
+    //
     document.addEventListener('click', function (event) {
         if (event.target.matches(".delete_marker")) {
-            console.log("DELETING THE MARKER!!");
+            deleteMarker(event);
         }
+
         // Event listeners for the buttons in the new-marker-data form
         else if (event.target.matches("#submit_marker")) {
             submitMarker(event);
@@ -178,13 +210,17 @@ function initMap() {
             cancelMarker(event);
         }
     }, false);
-
-    // Get the markers from the database
-    getMarkers().then((data) => {
-        return data.rows;
-    }).then((rows) => {
-        drawMarkers(rows);
-    });
+    
+    //
+    // GET THE MARKERS FROM THE DATABASE
+    // 
+    getMarkers()
+    .then((data) => {return data.rows;})
+    // Drawing the markers after an artificial delay of 1 sec
+    // https://stackoverflow.com/questions/38956121/how-to-add-delay-to-promise-inside-then
+    .then(rows => new Promise(resolve => setTimeout(() => resolve(drawMarkers(rows)), 1000)))
+    // Once all markers have been drawn, hide the 'loading spinner'
+    .then((result) => loading_spinner.classList.replace("show", "hide"))
 
 
     // Change the cursor type when the 'Insert New Location' button is clicked
@@ -261,8 +297,9 @@ function submitMarker() {
        in a database in a cloud server */
 
     // Get the marker information entered by the user through the form
-    marker_name = document.getElementById("marker_name_input").value;
-    marker_text = document.getElementById("marker_text_input").value;
+    // Handle the case when the user does not introduce anything at all
+    marker_name = document.getElementById("marker_name_input").value || "[Name not entered]";
+    marker_text = document.getElementById("marker_text_input").value || "[Text not entered]";
     var dt = new Date();
     var utcDate = dt.toUTCString();
     // Bind a popup event to the newly created marker
