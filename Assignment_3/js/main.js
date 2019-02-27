@@ -1,3 +1,12 @@
+// TODO: Completely remove or obfuscate the real name of the database table columns.
+// riseOnHover: true,
+// draggable: true,
+// Add this to map attribution: Map data © OpenStreetMap contributors
+// Give the possibiity of switch base layers
+//map.on('click', function () {
+//    map.removeLayer(marker);
+//  });
+
 L_PREFER_CANVAS = false;
 L_NO_TOUCH = false;
 L_DISABLE_3D = false;
