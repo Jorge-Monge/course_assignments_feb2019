@@ -233,7 +233,7 @@ function initMap() {
     // Tile layer definition
     // Variable definition below is enough to create the map.
     var tile_layer = L.tileLayer(
-        openStreetXYZ, {
+        googleMapsXYZ, {
             "attribution": "Google Maps",
             "detectRetina": false,
             "maxNativeZoom": 18,
