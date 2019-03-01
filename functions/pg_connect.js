@@ -23,6 +23,36 @@ const DB_DATABASE = 'biflpkhu';
 const DB_PASSWORD = 'hmkS-pad-WLwC-6weDRnFsFJweRkwk21';
 const DB_PORT = 5432;
 
+// SQL query for fetching names and texts of all markers
+const selectAllQuery = `SELECT gid,
+                             poi_name,
+                             poi_text,
+                             poi_lat,
+                             poi_lon,
+                             CONCAT(datetime_uploaded::date,
+                                ' | ',
+                                DATE_TRUNC('SECONDS', datetime_uploaded)::time) AS datetime_uploaded
+                      FROM json_ict442`;
+const sqlQueries = {
+    "selectAllQuery": `SELECT gid,
+                            poi_name,
+                            poi_text,
+                            poi_lat,
+                            poi_lon,
+                            CONCAT(datetime_uploaded::date,
+                            ' | ',
+                            DATE_TRUNC('SECONDS', datetime_uploaded)::time) AS datetime_uploaded
+                            FROM json_ict442`
+};
+
+// SQL query for inserting a marker in the database
+function generateInsertQuery(poi_name, poi_text, poi_lat, poi_lon) {
+    // This function accepts the new marker values, and returns the appropriate
+    // SQL string to be executed against the database 
+    return `INSERT INTO json_ict442 (poi_name, poi_text, poi_lat, poi_lon, datetime_uploaded)
+            VALUES ('${poi_name}', '${poi_text}', ${poi_lat}, ${poi_lon}, (SELECT NOW()))`;
+};
+
 async function execute(dbQuery) {
     const pgPool = new Pool({
         user: DB_USER,
@@ -44,15 +74,20 @@ exports.handler = async function (event, context, callback) {
     // will pass a database query to the back-end. This query will
     // be executed against the database, and the result passed to
     // the client (front-end)
-    dbQuery = JSON.parse(event.body).dbQuery;
+
+    // Will get the name of the SQL Query (string)
+    // We need to get the query value from sqlQueries object defined
+    // at the beginning of this file
+    dbQuery = sqlQueries[JSON.parse(event.body).dbQuery];
+    
     var response = await execute(dbQuery);
 
-        callback(null, {
-            statusCode: 200,
-            headers: {
-                "Access-Control-Allow-Origin": '*',
-                "Access-Control-Allow-Headers": 'Origin, X-Requested-With, Content-Type, Accept'
-            },
-            body: JSON.stringify(response)
-        }) // Returns JSON
+    callback(null, {
+        statusCode: 200,
+        headers: {
+            "Access-Control-Allow-Origin": '*',
+            "Access-Control-Allow-Headers": 'Origin, X-Requested-With, Content-Type, Accept'
+        },
+        body: JSON.stringify(response)
+    }) // Returns JSON
 };

@@ -16,26 +16,9 @@ L_DISABLE_3D = false;
 // interact with a PostgreSQL database in the cloud
 var urlBack = "/.netlify/functions/pg_connect";
 // For local debugging. Comment it out for Production
-//urlBack = "http://localhost:9000/pg_connect";
+urlBack = "http://localhost:9000/pg_connect";
 
-// SQL query for fetching names and texts of all markers
-var selectAllQuery = `SELECT gid,
-                             poi_name,
-                             poi_text,
-                             poi_lat,
-                             poi_lon,
-                             CONCAT(datetime_uploaded::date,
-                                ' | ',
-                                DATE_TRUNC('SECONDS', datetime_uploaded)::time) AS datetime_uploaded
-                      FROM json_ict442`;
 
-// SQL query for inserting a marker in the database
-function generateInsertQuery(poi_name, poi_text, poi_lat, poi_lon) {
-    // This function accepts the new marker values, and returns the appropriate
-    // SQL string to be executed against the database 
-    return `INSERT INTO json_ict442 (poi_name, poi_text, poi_lat, poi_lon, datetime_uploaded)
-            VALUES ('${poi_name}', '${poi_text}', ${poi_lat}, ${poi_lon}, (SELECT NOW()))`;
-};
 
 // SQL query for deleting a marker in the database
 function generateDeleteQuery(gid) {
@@ -106,6 +89,8 @@ var markerHtml = (marker_id, marker_name, marker_text, datetime_uploaded) => {
 
 
 async function httpPerformRequest(url, httpMethod, httpBody) {
+    // This function is supposed to make an HTTP request to the back-end
+    // and receive a JSON response.
     return (await fetch(url, {
         method: httpMethod,
         //headers: {
@@ -124,7 +109,9 @@ async function getMarkers() {
     return await httpPerformRequest(urlBack,
         'POST',
         JSON.stringify({
-            dbQuery: selectAllQuery
+            // The actual value of the "selectAllQuery" is stored in the
+            // back-end for security.
+            dbQuery: "selectAllQuery"
         }))
 };
 
@@ -153,20 +140,13 @@ function drawMarkers(markersArray) {
 function sendMarkerDatabase(marker) {
     // This function accepts an object (a marker) as the only
     // argument, and stores it in the database
-    var insertQuery = generateInsertQuery(marker.poi_name,
-        marker.poi_text,
-        marker.poi_lat,
-        marker.poi_lon);
-    console.log("insertQuery: " + insertQuery);
+    
     httpPerformRequest(urlBack,
             'POST',
-            JSON.stringify({
-                dbQuery: insertQuery
-            }))
+            JSON.stringify({ marker }))
         .then((res) => {
             console.log("Number of records added: " + res.rowCount);
         });
-
 };
 
 function deleteMarker(event) {
