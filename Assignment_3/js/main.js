@@ -10,7 +10,7 @@ L_DISABLE_3D = false;
 // interact with a PostgreSQL database in the cloud
 var urlBack = "/.netlify/functions/pg_connect";
 // For local debugging. Comment it out for Production
-urlBack = "http://localhost:9000/pg_connect";
+//urlBack = "http://localhost:9000/pg_connect";
 
 // Tiles from different providers
 var openStreetXYZ = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
