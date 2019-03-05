@@ -45,8 +45,17 @@
 <body>
     <!--Map container-->
     <div class="folium-map" id="main_map"></div>
+    <div id="map_buttons_container">
     <button id="insert_marker" class="btn btn-primary" title="After clicking this button, click on the desired position on the map">Insert New Location</button>
-    
+    <div id="basemap_options_container">
+        <button id="change_basemap" class="btn" title="Click here to change the base map">Change Basemap</button>
+        <button id="basemap1" class="basemap_option btn hide">Basemap 1</button>
+        <button id="basemap2" class="basemap_option btn hide">Basemap 2</button>
+        <button id="basemap3" class="basemap_option btn hide">Basemap 3</button>
+        <button id="basemap4" class="basemap_option btn hide">Basemap 4</button>
+    </div>
+    </div>
+
     <!-- Spinner:
          https://www.w3schools.com/icons/tryit.asp?filename=tryicons_fa-spinner-->
     <div id="loading_spinner" class="center-all-ontop show fa fa-spinner fa-spin"></div>

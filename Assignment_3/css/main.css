@@ -10,6 +10,11 @@ h3 {
     text-align: center;
 }
 
+button {
+    height: 40px;
+    margin: 10px;
+    background-color: red;
+}
 .custom_popup_html {
     background-color: white;
 }
@@ -66,12 +71,36 @@ h3 {
     border-radius: 5px;
 }
 
-/* Style of the 'Insert New Location' button */
-#insert_marker {
+#map_buttons_container {
     z-index: 1000;
     position: absolute;
     top: 18px;
     left: 70px;
+    display: flex;
+    flex-flow: wrap;
+    justify-content: space-between;
+}
+
+#basemap_options_container {
+    display: flex;
+    flex-flow: wrap;
+    flex-direction: column;
+}
+
+/* Style of the 'Insert New Location' button */
+#insert_marker {
+    z-index: 1000;
+    /*position: absolute;
+    top: 18px;
+    left: 70px;*/
+}
+
+/* Style of the 'Change Basemap' button */
+#change_basemap {
+    z-index: 1000;
+    /*position: absolute;
+    top: 18px;
+    left: 250px;*/
 }
 
 .delete_marker {
