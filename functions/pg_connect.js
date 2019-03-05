@@ -15,7 +15,7 @@ const { Pool } = require('pg');
 
 // Hiding away these sensitive values inside environment variables,
 // which will be provided while deploying the Netlify serverless app.
-const { DB_USER, DB_HOST, DB_DATABASE, DB_PASSWORD, DB_PORT } = process.env;
+const { DB_USER, DB_HOST, DB_DATABASE, DB_PASSWORD, DB_PORT, MAPBOX_TOKEN } = process.env;
 
 const sqlQueries = {
     // SQL query for fetching names and texts of all markers
@@ -68,6 +68,16 @@ async function execute(dbQuery) {
     await pgPool.end();
     return res;
 }
+
+// The function can be tested locally (with Postman), by POSTing
+// this body:
+/*
+{"httpMessage": {"dbQuery" : "selectAllQuery",
+"marker": {"marker_id": 31 },
+"featureIdList": []
+}
+}
+*/
 
 exports.handler = async function (event, context, callback) {
     // This function will answer to GET and POST requests.

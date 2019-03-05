@@ -13,8 +13,19 @@ h3 {
 button {
     height: 40px;
     margin: 10px;
-    background-color: red;
 }
+
+button.basemap_option {
+    background-color: white;
+    border-radius: 8px;
+    border: 2px solid gray;
+}
+
+button.basemap_option.option_selected {
+    border: 2px solid red;
+}
+
+
 .custom_popup_html {
     background-color: white;
 }

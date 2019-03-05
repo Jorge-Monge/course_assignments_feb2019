@@ -13,10 +13,13 @@ var urlBack = "/.netlify/functions/pg_connect";
 //urlBack = "http://localhost:9000/pg_connect";
 // Node JS function that is used to get the Mapbox token
 // (thus hiding it from the front-end)
-//var MAPBOX_TOKEN = "http://localhost:9000/get_mapbox_token";
+var url_mt = "/.netlify/functions/get_mapbox_token";
+// For local debugging. Comment it out for Production
+//url_mt = "http://localhost:9000/get_mapbox_token";
 
-// Tiles from different providers
-var openStreetXYZ = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+getMT()
+
+
 var googleMapsXYZ = 'http://www.google.cn/maps/vt?lyrs=s@189&gl=cn&x={x}&y={y}&z={z}';
 var bounds = null;
 var layerWidget = null;
@@ -53,6 +56,40 @@ var marker = null;
 // Array of markers in the map
 var markersArray = [];
 
+//
+// TILESET PROVIDERS
+//
+var openStreet_Map_Provider = {url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    options: {"attribution": "Map data © OpenStreetMap contributors",
+        "detectRetina": false,
+        "maxNativeZoom": 18,
+        "maxZoom": 18,
+        "minZoom": 0,
+        "noWrap": false,
+        "opacity": 1,
+        "subdomains": "abc",
+        "tms": false}};
+
+// Variable instantiation; its value will be provided by
+// populateMapBox_Map_Providers(mt), once the Mapbox token is ready 
+var mapBox_Map_Provider;
+// Mapbox map styles: https://docs.mapbox.com/api/maps/#static
+var mapbox_style = {"bm-mb-streets": "streets-v11", "bm-mb-outdoors": "outdoors-v11",
+    "bm-mb-light": "light-v10", "bm-mb-dark": "dark-v10", "bm-mb-satellite": "satellite-v9",
+    "bm-mb-hybrid": "satellite-streets-v11"};
+
+function populateMapBox_Map_Providers(mt) {
+    // This function will be invoked once the Mapbox token has been obtained
+    // from the server. It creates the Mapbox Leaflet layers, almost ready to be
+    // inserted on the map (still we need to define the mapbox stiles (variable 'mapbox_style'))
+    mapBox_Map_Provider = {url: "https://api.mapbox.com/styles/v1/mapbox/${mapbox_style}/tiles/{z}/{x}/{y}?access_token=${mt}".replace("${mt}", mt),
+        options: {attribution: "© <a href='https://apps.mapbox.com/feedback/'>Mapbox</a> © <a href='http://www.openstreetmap.org/copyright'>OpenStreetMap</a>",
+            tileSize: 512,
+            opacity: 1,
+            zoomOffset: -1,
+            }}; // mapBox_Map_Provider ends
+    return mapBox_Map_Provider;
+}
 // Pseudo-marker (not an actual instance of the Leaflet class),
 // used to store point properties and send them to the database
 var point = {};
@@ -62,6 +99,16 @@ var marker_name_input = null;
 var marker_text_input = null;
 // Leaflet layer group that will contain all the markers
 var markerGroup = null
+
+function createTileLayer(map_provider, options) {
+    // This function accepts the URL of a map provider,
+    // plus the appropriate options for the Leaflet.tileLayer object
+    // and returns a Leaflet.tileLayer object that can then
+    // be added to the Leaflet map
+
+    return L.tileLayer(map_provider, options);
+}
+
 
 // Arrow function the, when invoked, will
 // return an HTML block where the variables
@@ -88,16 +135,29 @@ var markerHtml = (marker_leaflet_id, marker_db_id, marker_name, marker_text, dat
             </div>`
 };
 
+async function getMT() {
+    return await httpPerformRequest(url_mt,
+        'POST',
+        JSON.stringify({
+            // The actual value of the "selectAllQuery" is stored in the
+            // back-end for security.
+            httpMessage: {msg: "Give me that!"}
+        })
+    )  // httpPerformRequest ends
+    .then(data => populateMapBox_Map_Providers(data.mt))
+    //.then(o => console.log(o))
+}
+
 
 async function httpPerformRequest(url, httpMethod, httpBody) {
     // This function is supposed to make an HTTP request to the back-end
     // and receive a JSON response.
     return (await fetch(url, {
         method: httpMethod,
-        //headers: {
+        headers: {
         // Informs the server about the types of data that can be sent back
-        //'Accept': "application/json"//,
-        //},
+        'Accept': "application/json"//,
+        },
         body: httpBody
     })).json();
 }
@@ -175,7 +235,40 @@ function drawMarkers(list_of_markers) {
     return true;
 };
 
+function changeBaseMap(DOMClassList, basemap_id) {
+    // This function gets a DOM element's ID, and
+    // returns the appropriate Map_Provider
+    if (DOMClassList.contains("Openstreet")) {
+        var bm_provider = "Openstreet";
+    } else if (DOMClassList.contains("Mapbox")) {
+        var bm_provider = "Mapbox";
+    }
+    var basemaps_dict = {"Openstreet": {url: openStreet_Map_Provider.url, options: openStreet_Map_Provider.options},
+        "Mapbox": {url: mapBox_Map_Provider.url.replace("${mapbox_style}", mapbox_style[basemap_id]),
+            options: mapBox_Map_Provider.options},
+        
+        };
+    
+    // Returns an object, with keys: url options
+    return basemaps_dict[bm_provider];
+}
 
+function mapboxStyles(DOMid) {
+    // This function get DOM element's IDs regarding the Mapbox map styles, and return an
+    // object with the appropriate Mapbox tiles url and map options
+    return {url: mapBox_Map_Provider.url.replace("${mapbox_style}", mapbox_style.mb_streets),
+    options: mapBox_Map_Provider.options}
+}
+
+
+function draw_basemap(url, options) {
+    
+        main_map.eachLayer((layer) => main_map.removeLayer(layer));
+    
+        setTimeout(() => {
+            createTileLayer(url, options).addTo(main_map);
+        }, 1000)
+}
 
 function deleteMarker(event, marker) {
     //console.log(event.target.id);
@@ -191,7 +284,7 @@ function deleteMarker(event, marker) {
         .then(res => res.rowCount);
 }
 
-function changeBasemap(htmlCollection) {
+function toggleVisibilityBasemapOptionBtns(htmlCollection) {
     // This function is designed to receive a HTMLCollection,
     // and toggle the 'hide' class of its elements.
 
@@ -293,7 +386,25 @@ function initMap() {
             });
         }
         else if (event.target.matches("#change_basemap")) {
-            changeBasemap(basemap_options_btns);
+            toggleVisibilityBasemapOptionBtns(basemap_options_btns);
+        }
+        else if (event.target.matches(".basemap_option")) {
+
+            // Reset the style of all the option buttons
+            Array.prototype.forEach.call(
+                basemap_options_btns, function (b) {
+                    b.classList.remove("option_selected");
+                });
+            
+            // Get the basemap .url and .options properties
+            var new_basemap = changeBaseMap(event.target.classList, event.target.id);
+            // And redraw the basemap
+            draw_basemap(new_basemap.url, new_basemap.options);
+            // And change the style of the button
+            // corresponding to the option selected
+            document.getElementById(event.target.id).classList.toggle("option_selected");
+            // And collapse the dropdown menu
+            toggleVisibilityBasemapOptionBtns(basemap_options_btns);
         }
         else if (event.target.matches("#insert_marker")) {
             prepInsertMarker(event);
@@ -312,7 +423,7 @@ function initMap() {
 
     // Tile layer definition
     // Variable definition below is enough to create the map.
-    var tile_layer = L.tileLayer(
+    /*var tile_layer = L.tileLayer(
         openStreetXYZ, {
             "attribution": "Map data © OpenStreetMap contributors",
             "detectRetina": false,
@@ -325,12 +436,21 @@ function initMap() {
             "tms": false
         }).addTo(main_map);
 
+        openStreet_Map_Provider
+        mapBox_Map_Provider*/
+    
+    draw_basemap(openStreet_Map_Provider.url, openStreet_Map_Provider.options);
+
+    
+
+    
+        /*
     var layer_control = {
         base_layers: {
             "OpenStreetMap": tile_layer,
         },
         overlays: {}
-    };
+    };*/
 } // 'initMap' function ends
 
 
