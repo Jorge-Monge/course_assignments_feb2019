@@ -15,13 +15,7 @@ const { Pool } = require('pg');
 
 // Hiding away these sensitive values inside environment variables,
 // which will be provided while deploying the Netlify serverless app.
-//const { DB_USER, DB_HOST, DB_DATABASE, DB_PASSWORD, DB_PORT } = process.env;
-
-const DB_USER = 'biflpkhu';
-const DB_HOST = 'baasu.db.elephantsql.com';
-const DB_DATABASE = 'biflpkhu';
-const DB_PASSWORD = 'hmkS-pad-WLwC-6weDRnFsFJweRkwk21';
-const DB_PORT = 5432;
+const { DB_USER, DB_HOST, DB_DATABASE, DB_PASSWORD, DB_PORT } = process.env;
 
 const sqlQueries = {
     // SQL query for fetching names and texts of all markers
