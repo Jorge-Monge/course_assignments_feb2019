@@ -10,10 +10,10 @@ L_DISABLE_3D = false;
 // interact with a PostgreSQL database in the cloud
 var urlBack = "/.netlify/functions/pg_connect";
 // For local debugging. Comment it out for Production
-urlBack = "http://localhost:9000/pg_connect";
+//urlBack = "http://localhost:9000/pg_connect";
 // Node JS function that is used to get the Mapbox token
 // (thus hiding it from the front-end)
-var mapboxToken = "http://localhost:9000/get_mapbox_token";
+//var MAPBOX_TOKEN = "http://localhost:9000/get_mapbox_token";
 
 // Tiles from different providers
 var openStreetXYZ = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
