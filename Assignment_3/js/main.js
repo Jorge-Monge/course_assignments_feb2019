@@ -690,6 +690,7 @@ function cancelMarker() {
     new_marker_form.classList.replace("show", "hide");
     // Re-enable the 'Insert New Location' button
     insert_marker_btn.disabled = false;
+    change_basemap_btn.disabled = false;
 }
 
 //

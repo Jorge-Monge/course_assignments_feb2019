@@ -70,7 +70,7 @@ button.basemap_option.option_selected {
 }
 /* Style of the marker information form */
 #new_marker_container {
-    background-color: rgba(100,100,150,0.5);
+    background-color: rgba(255,255,255,0.9);
     margin-left: 0;
     margin-top: 30px;
     padding: 20px;
