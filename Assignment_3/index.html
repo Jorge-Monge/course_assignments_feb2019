@@ -1,18 +1,20 @@
 <!--
 -- ICT 442 - Javascript and the DOM - Assignment 2
--- February 12th, 2019
+-- March 5th, 2019
 
 -- Student's first name: Jorge Luis
 -- Student's last name: Monge Blanco
 -- email: jorge.monge.bgis@gmail.com
 -- email: gis@jorgemonge.ca
--- hosted version of this page: https://tender-leavitt-ed94ae.netlify.com/
--- Date Submitted: 2019 February 12
+-- hosted version of this page: https://www.ict-442.jorgemonge.ca/assignment_3/
+-- Date Submitted: 2019 March 05
 --
 -- *** NOTES ***
 -- External CSS and JS files
 -- All custom behaviour build with vanilla Javascript
 -- External CSS frameworks: Lots
+-- Serverless Lambda functions deployed to Amazon Web Services (AWS) through Netlify
+-- https://www.netlify.com/features/functions/
 -->
 
 <!DOCTYPE html>
@@ -37,7 +39,7 @@
     <!--Page icon-->
     <link rel="icon" type="image/x-icon" href="images/favicon.ico">
 
-    <!--*** This is the good stuff ***-->
+    <!--*** MAIN JAVASCRIPT FILE ***-->
     <script type="text/javascript" src="js/main.js"></script>
 
 </head>
@@ -45,11 +47,17 @@
 <body>
     <!--Map container-->
     <div class="folium-map" id="main_map"></div>
+
+    <!--Container for the buttons-->
     <div id="map_buttons_container">
+
+        <!--INSERT MARKER Button-->
         <button id="insert_marker" class="btn btn-primary" title="After clicking this button, click on the desired position on the map">Insert New Location</button>
+       
+        <!--CHANGE BASEMAP Container-->
         <div id="basemap_options_container">
             <button id="change_basemap" class="btn btn-primary" title="Click here to change the base map">Change Basemap</button>
-            <button id="bm-openstreet" class="Openstreet basemap_option btn hide">OpenStreet</button>
+            <button id="bm-openstreet" class="Openstreet basemap_option option_selected btn hide">OpenStreet</button>
             <button id="bm-mb-streets" class="Mapbox basemap_option btn hide">Mapbox - Streets</button>
             <button id="bm-mb-outdoors" class="Mapbox basemap_option btn hide">Mapbox - Outdoors</button>
             <button id="bm-mb-satellite" class="Mapbox basemap_option btn hide">Mapbox - Satellite</button>
@@ -60,10 +68,13 @@
     </div>
 
     <!-- Spinner:
-         https://www.w3schools.com/icons/tryit.asp?filename=tryicons_fa-spinner-->
+         https://www.w3schools.com/icons/tryit.asp?filename=tryicons_fa-spinner
+        This displays while the markers are being fetched from the database -->
     <div id="loading_spinner" class="center-all-ontop show fa fa-spinner fa-spin"></div>
 
-    <!--Insert new location information - FORM-->
+    <!-- Insert new location information - FORM
+        This is the form where the user introduces the marker's name, text, and
+        eventually other information, like pictures, etc. -->
     <div id="new_marker_container" class="hide">
         <div id="marker_name" class="form-group">
             <label for="marker_name_input">Name of Point of Interest:</label>
