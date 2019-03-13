@@ -24,7 +24,7 @@ var url_mt = "/.netlify/functions/get_mapbox_token";
 //url_mt = "http://localhost:9000/get_mapbox_token";
 
 // Node JS function that is used to send emails
-var urlServerFunction = "./netlify/functions/mailer.js";
+var urlServerFunction = "./netlify/functions/mailer";
 // Line below needed for local debugging. COMMENT IT OUT FOR PRODUCTION
 //urlServerFunction = "http://localhost:9000/mailer";
 
