@@ -16,11 +16,18 @@ const L_DISABLE_3D = false;
 var urlBack = "/.netlify/functions/pg_connect";
 // Line below needed for local debugging. COMMENT IT OUT FOR PRODUCTION
 //urlBack = "http://localhost:9000/pg_connect";
+
 // Node JS function that is used to get the Mapbox token
 // (thus hiding it (to a limited extent) from the front-end)
 var url_mt = "/.netlify/functions/get_mapbox_token";
 // Line below needed for local debugging. COMMENT IT OUT FOR PRODUCTION
 //url_mt = "http://localhost:9000/get_mapbox_token";
+
+// Node JS function that is used to send emails
+var urlServerFunction = "./netlify/functions/mailer.js";
+// Line below needed for local debugging. COMMENT IT OUT FOR PRODUCTION
+//urlServerFunction = "http://localhost:9000/mailer";
+
 
 // Connect to one of the AWS serverless functions
 // and get the Mapbox token as soon as possible.
@@ -48,11 +55,26 @@ var markerGroup = L.layerGroup();
 var marker = null;
 // Array of markers in the map
 var markersArray = [];
+// Index of the marker deleted from the front-end
+var delMarkerIndex;
 // Temporary marker (pending the actual submission or cancellation)
 // It will be removed immediately after submitting or cancelling, and then
 // fetch back from the database
 var tempMarker = null;
-
+// Image uploaded, in Base64 encoding
+var imageBase64;
+// Marker name validation
+var nameOk = false;
+// Marker text validation
+var textOk = false;
+// image file size Boolean. True, unless the user tries
+// to upload an image with a size greater than 1 MB
+var validImgSize = true;
+// email valid Boolean
+var validEmail = false;
+// Object containing all the information of a new marker
+// as obtained from the form
+var point = {};
 // DOM container for the map
 var main_map_container = null;
 // DOM element: rotating icon displayed until the markers are
@@ -114,7 +136,7 @@ var mapbox_style = {
 
 // Wait until all DOM elements are ready, so that their
 // invocation does not fail.
-document.addEventListener("DOMContentLoaded", initMap);
+//document.addEventListener("DOMContentLoaded", initMap);
 
 
 // MAIN FUNCTION
@@ -131,6 +153,13 @@ function initMap() {
     cancel_marker = document.getElementById("cancel_marker");
     form_marker_name_input = document.getElementById("marker_name_input");
     form_marker_text_input = document.getElementById("marker_text_input");
+    form_marker_email_input = document.getElementById("email_input");
+    form_marker_img_input = document.getElementById("img_upload_id");
+    image_file_name = document.getElementById("image_file_name");
+    req_name = document.getElementById("req_name");
+    req_text = document.getElementById("req_text");
+    req_email = document.getElementById("req_email");
+    mapbox_outdoors_btn = document.getElementById("bm-mb-outdoors");
 
     /* This is the main function.
        It draws a Leaflet map, and add the necessary event listeners
@@ -139,8 +168,9 @@ function initMap() {
     // Map definition
     main_map = L.map(
         'main_map', {
-            center: [51.112942, -114.111327],
-            zoom: 14,
+            //center: [51.112942, -114.111327], // Nose Hill Park
+            center: [50.82508, -115.26280], // Chester Lake, Kananaskis
+            zoom: 13,
             maxBounds: bounds,
             layers: [],
             worldCopyJump: false,
@@ -156,6 +186,101 @@ function initMap() {
     // but to the Leaflet map object
     main_map.addEventListener("click", mapClicked);
 
+    // Event listener on file selected for upload
+    form_marker_img_input.addEventListener("change", () => {
+
+        if (form_marker_img_input.files) {
+
+            image_file_name.value = form_marker_img_input.files[0].name;
+        }
+
+        var i = document.getElementsByClassName("required_warning image_input")[0];
+        // If the file size is OK, remove the red color, flag filesize OK
+        if (form_marker_img_input.files[0].size <= 1048576) {
+            
+            validImgSize = true; // Valid image size.
+            
+            if (i.classList.contains("invalid_input")) {
+                i.classList.remove("invalid_input");
+            }
+        } else { // File size is bigger than allowed
+            
+            validImgSize = false; // Invalid image size. Block form submission
+
+            if (!i.classList.contains("invalid_input")) {
+                i.classList.add("invalid_input");
+            }
+        }
+
+        validateForm();
+
+    });
+
+    // Event listener on the 2 text inputs
+    document.addEventListener('input', function (event) {
+        if (event.target.matches("#marker_name_input")) {
+            // Some text. OK
+            if (form_marker_name_input.value != '') {
+                nameOk = true;
+                if (req_name.classList.contains("invalid_input")) {
+                    req_name.classList.remove("invalid_input");
+                }
+
+            } else { // text is empty
+                nameOk = false;
+                if (!req_name.classList.contains("invalid_input")) {
+                    req_name.classList.add("invalid_input");
+                }
+
+            }
+            // Check if the Submit button can be enabled
+            validateForm();
+        } else if (event.target.matches("#marker_text_input")) {
+            if (form_marker_text_input.value != '') {
+                // Some text. OK
+                textOk = true;
+                if (req_text.classList.contains("invalid_input")) {
+                    req_text.classList.remove("invalid_input");
+                }
+
+            } else { // text is empty
+                textOk = false;
+                if (!req_text.classList.contains("invalid_input")) {
+                    req_text.classList.add("invalid_input");
+                }
+
+            }
+            // Check if the Submit button can be enabled
+            validateForm();
+            // Email validation
+        } else if (event.target.matches("#email_input")) {
+            // Some value in the email field
+            if (form_marker_email_input.value != '') {
+                // Validate it!
+                if (!IsValidEmail(event.target.value)) { // invalid email
+                    validEmail = false;
+                    if (!req_email.classList.contains("invalid_input")) {
+                        req_email.classList.add("invalid_input");
+                    }
+
+                } else { // valid email
+                    validEmail = true;
+                    if (req_email.classList.contains("invalid_input")) {
+                        req_email.classList.remove("invalid_input");
+                    }
+
+                }
+            }
+            // Check if the Submit button can be enabled
+            validateForm()
+        }
+    })
+
+    // Invocation of the submitMarker function upon submission of the form
+    new_marker_form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        submitMarker(event);
+    });
 
     // *** EVENT DELEGATION ***
     // https://gomakethings.com/why-event-delegation-is-a-better-way-to-listen-for-events-in-vanilla-js/
@@ -185,14 +310,14 @@ function initMap() {
             // Remove it from the front-end
             markersArray.forEach(m => {
                 if (m._leaflet_id.toString() === JSON.parse(event.target.id).marker_leaflet_id) {
-                    main_map.removeLayer(m);
+                    markerGroup.removeLayer(m);
                 }
-            }) 
+            }) // forEach ends
         } // Delete markers ends
 
         // CHANGE BASEMAP
         else if (event.target.matches("#change_basemap")) {
-            toggleVisibilityBasemapOptionBtns(basemap_options_btns);    
+            toggleVisibilityBasemapOptionBtns(basemap_options_btns);
         } // Change basemap ends
 
         // BASEMAP OPTION SELECTED   
@@ -217,15 +342,19 @@ function initMap() {
 
         // INSERT MARKER BUTTON CLICKED
         else if (event.target.matches("#insert_marker")) {
+            // Hide away the webmap options buttons if not collapsed already
+            hideBasemapOptionBtns(basemap_options_btns);
+            // Toggle the cursor between cross and panning hand
             prepInsertMarker(event);
+            var insButn = document.querySelectorAll("#insert_marker")[0];
+            var defaultText = "Insert New Location";
+            if (insButn.innerText === defaultText) {
+                insButn.innerText = "Cancel New Location Insertion";
+            } else {
+                insButn.innerText = defaultText;
+            }
         }
 
-        // SUBMIT MARKER BUTTON CLICKED
-        else if (event.target.matches("#submit_marker")) {
-            submitMarker(event);
-            // Add a click event listener for the cancel submission button in the new-marker form
-        }
-        
         // CANCEL MARKER SUBMISSION BUTTON CLICKED
         else if (event.target.matches("#cancel_marker")) {
             cancelMarker(event);
@@ -233,9 +362,13 @@ function initMap() {
     }, false); // Event listeners on the whole map object ends
 
     //
-    // DRAW THE BASEMAP
+    // DRAW THE BASEMAP WHEN THE PAGE LOADS
     //
-    draw_basemap(openStreet_Map_Provider.url, openStreet_Map_Provider.options);
+    // openStreet map as startup map
+    //draw_basemap(openStreet_Map_Provider.url, openStreet_Map_Provider.options); 
+    // Mapbox Outdoors as startup map
+    var mb = changeBaseMap(mapbox_outdoors_btn.classList, "bm-mb-outdoors");
+    draw_basemap(mb.url, mb.options);
     //
     // GET THE MARKERS FROM THE DATABASE, AND DRAW THEM (when fetching ends)
     getMarkersFromDB("selectAllQuery", {}, []);
@@ -307,7 +440,7 @@ async function getMT() {
         })
     ) // httpPerformRequest ends
         .then(data => populateMapBox_Map_Providers(data.mt))
-    //.then(o => console.log(o))
+        .then(() => initMap())
 }
 
 
@@ -346,7 +479,6 @@ function drawMarker(latitude, longitude) {
     // This function receives latitude and longitude values,
     // and draws a Leaflet marker on the map, but not a pop-up.
     // It returns the Leaflet marker.
-
     return L.marker([latitude, longitude]).addTo(markerGroup);
 }
 
@@ -370,10 +502,13 @@ function drawMarkers(list_of_markers) {
 
         var m = L.marker([marker.marker_latitude,
         marker.marker_longitude], {}).addTo(markerGroup);
+
         // Bind a popup event to the newly created marker
         m.bindPopup(markerHtml(m._leaflet_id, marker.marker_id, marker.marker_name,
             marker.marker_text,
-            marker.when_uploaded), {
+            marker.date_uploaded,
+            marker.time_uploaded,
+            marker.marker_image), {
                 closeButton: false
             });
         // Store the newly-drawn marker in an Array, for future retrieval
@@ -398,7 +533,9 @@ function drawMarkers(list_of_markers) {
 //
 
 function deleteMarker(event, marker) {
-    //console.log(event.target.id);
+
+    console.log(marker);
+    markerGroup.removeLayer(marker)
     httpPerformRequest(urlBack,
         'POST',
         JSON.stringify({
@@ -408,7 +545,7 @@ function deleteMarker(event, marker) {
             } // httpMessage ends
         }) // POST body ends
     ) // httpPerformRequest ends
-        .then(res => res.rowCount);
+        .then(res => res.rowCount)
 }
 
 
@@ -418,28 +555,39 @@ function deleteMarker(event, marker) {
 
 // Function that creates the Marker's popup by
 // populating a HTML block with the marker object's properties.
-function markerHtml(marker_leaflet_id, marker_db_id, marker_name, marker_text, datetime_uploaded) {
+function markerHtml(marker_leaflet_id, marker_db_id, marker_name, marker_text, date_uploaded, time_uploaded, marker_image) {
+    // Presume that no image is attached to the marker, so we will hide the <img> element
+    var image_display = "hide"
+    // But if there is an image attached:
+    if (marker_image) {
+        image_display = "show";
+    }
     return `<div class="w3-card-4 custom_popup_html">
-            <header class="w3-container w3-blue">
+            <header class="w3-container w3-indigo">
             <h5>${marker_name}</h5>
             </header>
             <div class="w3-container">
             <p>${marker_text}</p>
             </div>
-            <div class="w3-container">
-            <img src="smiley.gif" alt="Smiley face">
+            <div class="marker_img_container">
+            <img src="${marker_image}" alt="Marker image" class="marker_img ${image_display}">
             </div>
-            <footer class="w3-container w3-blue">
+
+            <footer class="w3-container w3-indigo">
             <p>Id.# ${marker_leaflet_id}</p>
             <div class="marker_popup_footer">
-            <p>${datetime_uploaded} UTC</p>
+            <div class="">
+            <div>${date_uploaded}</div>
+            <div>${time_uploaded} UTC</div>
+            </div> <!-- Dates container ends -->
             <!-- Note that the value of the id attribute value is dynamically generated
                  to match the marker Id. This will help to identify the element when
                  deleting markers -->
             <input id='{"marker_leaflet_id": "${marker_leaflet_id}", 
-                        "marker_db_id": "${marker_db_id}"}' type="image" src="images/delete-png-icon-7.png" class="delete_marker"/>
-            </div>
+                        "marker_db_id": "${marker_db_id}"}' type="image" src="images/delete-png-icon-red.png" class="delete_marker"/>
+            </div> <!-- marker_popup_footer ends -->
             </footer>
+
             </div>`
 };
 
@@ -455,7 +603,9 @@ function bindPopup(marker) {
         marker.marker_id,
         marker.marker_name,
         marker.marker_text,
-        marker.when_uploaded), {
+        marker.date_uploaded,
+        marker.time_uploaded,
+        marker.marker_image), {
             closeButton: false
         });
 }
@@ -546,8 +696,6 @@ function createTileLayer(map_provider, options) {
 
 function draw_basemap(url, options) {
 
-    main_map.eachLayer((layer) => main_map.removeLayer(layer));
-
     createTileLayer(url, options).addTo(main_map);
     markerGroup.addTo(main_map);
 }
@@ -569,6 +717,25 @@ function toggleVisibilityBasemapOptionBtns(htmlCollection) {
         });
 }
 
+
+//
+// COLLAPSE ALL BASEMAP OPTIONS BUTTONS
+//
+
+function hideBasemapOptionBtns(htmlCollection) {
+    // This function is designed to receive a HTMLCollection,
+    // and add the 'hide' class to its elements, if they don't
+    // have it already
+
+    // https://stackoverflow.com/questions/3871547/js-iterating-over-result-of-getelementsbyclassname-using-array-foreach/37941811
+    Array.prototype.forEach.call(
+        htmlCollection,
+        function (b) {
+            if (!b.classList.contains("hide")) {
+                b.classList.add("hide");
+            }
+        });
+}
 
 //
 // CHANGE CURSOR IN PREPARATION FOR THE INSERTION OF NEW MARKER
@@ -614,6 +781,53 @@ function mapClicked(event) {
     return event.latlng;
 }
 
+//
+// CONVERTS AN IMAGE FILE TO BASE64 ENCODING
+//
+
+// https://stackoverflow.com/questions/6150289/how-to-convert-image-into-base64-string-using-javascript
+async function imgTobase64(imgFile) {
+    // Scenario when the user DID UPLOAD an image
+    if (imgFile) {
+        
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(imgFile);
+        })
+    } else { // The user DID NOT upload an image
+
+        return "";
+    }
+    
+}
+
+
+//
+// INFORMS THE USER OF INVALID INPUT
+//
+
+function validateForm() {
+    // Validate image size is OK and that there are some text in the text inputs
+    if (nameOk && textOk && validImgSize && validEmail) {
+        submit_marker.disabled = false;
+    } else {
+        submit_marker.disabled = true;
+    }
+}
+
+
+
+//
+// VALIDATE EMAIL
+//
+
+function IsValidEmail(emailCandidate) {
+    var regex = /^([a-z\d!#$%&'*+\-\/=?^_`{|}~\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]+(\.[a-z\d!#$%&'*+\-\/=?^_`{|}~\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]+)*|"((([ \t]*\r\n)?[ \t]+)?([\x01-\x08\x0b\x0c\x0e-\x1f\x7f\x21\x23-\x5b\x5d-\x7e\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]|\\[\x01-\x09\x0b\x0c\x0d-\x7f\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]))*(([ \t]*\r\n)?[ \t]+)?")@(([a-z\d\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]|[a-z\d\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF][a-z\d\-._~\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]*[a-z\d\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])\.)+([a-z\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]|[a-z\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF][a-z\d\-._~\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]*[a-z\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])\.?$/i;
+    return regex.test(emailCandidate);
+}
+
 
 //
 // SUBMITS A MARKER TO THE DATABASE
@@ -641,38 +855,55 @@ function submitMarker() {
     // Handle the case when the user does not introduce anything at all
     marker_name = form_marker_name_input.value || "[Name not entered]";
     marker_text = form_marker_text_input.value || "[Text not entered]";
+    to_email = form_marker_email_input.value;
+    console.log("to_email: ", to_email);
+    // Converts the image uploaded to Base64 encoding
+        // form_marker_img_input.files[0] is maintained from previous upload operation
+        if (form_marker_img_input.files) {
+            var imgArg = form_marker_img_input.files[0];
+        } // else imgArg will be 'undefined'
+            
+        imgTobase64(imgArg)
+            // Once done, 
+            .then((img64) => {
 
-    // Store the newly-input marker into the back-end database, by
-    // invoking the sendMarkerDatabase function
-    var point = {
-        marker_id: null,
-        marker_name: marker_name,
-        marker_text: marker_text,
-        // Remember that 'tempMarker' is the temporary marker
-        // upon the 'click' event that also opened the form.
-        marker_latitude: tempMarker._latlng.lat,
-        marker_longitude: tempMarker._latlng.lng
-    };
+                point = {
+                    marker_id: null,
+                    marker_name: marker_name,
+                    marker_text: marker_text,
+                    // Remember that 'tempMarker' is the temporary marker
+                    // upon the 'click' event that also opened the form.
+                    marker_latitude: tempMarker._latlng.lat,
+                    marker_longitude: tempMarker._latlng.lng,
+                    marker_image: img64
+                }; // point definition ends
 
-    cancelMarker()
+                // Remove the marker just drawn
+                main_map.removeLayer(tempMarker);
 
-    // Store the just-submitted marker in the database
-    // The SQL query, besides inserting the new feature,
-    // returns back the new features in the database (i.e. the
-    // feature just inserted plus any feature inserted by other
-    // users)
-    queryExecute("insertMarkerQuery", point, [])
-        .then(res => {
-            console.log("Feature IDs List before getting the new back: ");
-            console.log(featureIdList);
-            getMarkersFromDB("selectNewQuery", {}, featureIdList)
-        })
+                // Store the just-submitted marker in the database
+                // The SQL query, besides inserting the new feature,
+                // returns back the new features in the database (i.e. the
+                // feature just inserted plus any feature inserted by other
+                // users)
+                queryExecute("insertMarkerQuery", point, [])
+                    .then(res => {
+                        console.log("Feature IDs List before getting the new back: ");
+                        console.log(featureIdList);
+                        getMarkersFromDB("selectNewQuery", {}, featureIdList)
+                    })
+            })
+            // Send an email
+            .then(() => sendEmail(to_email))
 
     // Hide the form to introduce marker details
     new_marker_form.classList.replace("show", "hide");
     // Empty the form so it looks good when re-opened
-    document.getElementById("marker_name_input").value = "";
-    document.getElementById("marker_text_input").value = "";
+    form_marker_name_input.value = "";
+    form_marker_text_input.value = "";
+    image_file_name.value = null;
+    form_marker_img_input.value = "";
+    form_marker_email_input.value = null;
     insert_marker_btn.disabled = false;
     change_basemap_btn.disabled = false;
 }
@@ -686,7 +917,7 @@ function cancelMarker() {
     /* This function removes the just-inserted marker.
        Also, it re-enables the 'Insert New Location' button and
        hides the form */
-
+    console.log("Inside the cancelMarker function");
     // Remove the marker just drawn
     main_map.removeLayer(tempMarker);
     // Hide the form to introduce marker details
@@ -694,6 +925,31 @@ function cancelMarker() {
     // Re-enable the 'Insert New Location' button
     insert_marker_btn.disabled = false;
     change_basemap_btn.disabled = false;
+
+    // This is necessary in order not to submit the form
+    return false;
+}
+
+
+//
+// FUNCTION THAT SENDS EMAILS
+//
+
+async function sendEmail(to_email) {
+    console.log("Sending email...");
+    
+    var res = await (await fetch(urlServerFunction,
+        {
+            method: 'POST',
+            headers: {
+                // Informs the server about the types of data that can be sent back
+                'Accept': "application/json" //,
+            },// headers ends
+            body: JSON.stringify({httpMessage: {to_email: to_email}})
+        }) // fetch ends
+        ).json();
+        
+    console.log(res);
 }
 
 //

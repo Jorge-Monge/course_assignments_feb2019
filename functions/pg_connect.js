@@ -26,17 +26,21 @@ const sqlQueries = {
                             poi_text AS marker_text,
                             poi_lat AS marker_latitude,
                             poi_lon AS marker_longitude,
-                            CONCAT(datetime_uploaded::date,
-                            ' | ',
-                            DATE_TRUNC('SECONDS', datetime_uploaded)::time) AS when_uploaded
-                            FROM json_ict442`,
+                            CONCAT(
+                                EXTRACT(YEAR FROM datetime_uploaded), '-',
+                                LPAD(EXTRACT(MONTH FROM datetime_uploaded)::text, 2, '0'), '-',
+                                LPAD(EXTRACT(DAY FROM datetime_uploaded)::text, 2, '0')
+                                )AS date_uploaded,
+                            DATE_TRUNC('SECONDS', datetime_uploaded)::time AS time_uploaded,
+                            image_b64 AS marker_image 
+                            FROM leaflet_project_1`,
 
     // SQL query for inserting a marker in the database
     // and selecting back the new ones.
-    "insertMarkerQuery":    "INSERT INTO json_ict442 (poi_name, poi_text, poi_lat," +
-                            "poi_lon, datetime_uploaded) " + 
+    "insertMarkerQuery":    "INSERT INTO leaflet_project_1 (poi_name, poi_text, poi_lat," +
+                            "poi_lon, datetime_uploaded, image_b64) " + 
                             "VALUES ('${marker_name}', '${marker_text}', ${marker_latitude}," + 
-                            "${marker_longitude}, (SELECT NOW()));",
+                            "${marker_longitude}, (SELECT NOW()), '${marker_image}');",
                             
     // SQL query to get the markers that are not in the map yet.
     "selectNewQuery":       "SELECT gid AS marker_id," +
@@ -44,14 +48,18 @@ const sqlQueries = {
                             "poi_text AS marker_text," +
                             "poi_lat AS marker_latitude," +
                             "poi_lon AS marker_longitude," +
-                            "CONCAT(datetime_uploaded::date," +
-                            "' | '," +
-                            "DATE_TRUNC('SECONDS', datetime_uploaded)::time) AS when_uploaded " +
-                            "FROM json_ict442 " +
+                            "CONCAT(" +
+                                "EXTRACT(YEAR FROM datetime_uploaded), '-'," +
+                                "LPAD(EXTRACT(MONTH FROM datetime_uploaded)::text, 2, '0'), '-'," +
+                                "LPAD(EXTRACT(DAY FROM datetime_uploaded)::text, 2, '0')" +
+                                ") AS date_uploaded," +
+                            "DATE_TRUNC('SECONDS', datetime_uploaded)::time AS time_uploaded, " +
+                            "image_b64 AS marker_image " +
+                            "FROM leaflet_project_1 " +
                             "WHERE NOT gid IN (${featureIdList});",
 
     // SQL query for deleting a marker from the database
-    "deleteMarkerQuery": "DELETE FROM json_ict442 WHERE gid = ${marker_id}"
+    "deleteMarkerQuery": "DELETE FROM leaflet_project_1 WHERE gid = ${marker_id}"
 };
 
 async function execute(dbQuery) {
@@ -103,9 +111,9 @@ exports.handler = async function (event, context, callback) {
         .replace("${marker_text}", marker.marker_text)
         .replace("${marker_latitude}", marker.marker_latitude)
         .replace("${marker_longitude}", marker.marker_longitude)
+        .replace("${marker_image}", marker.marker_image)
         .replace("${featureIdList}", httpMessage.featureIdList.toString())
         ; 
-    console.log("DB QUERY: " + dbQuery);
 
     var response = await execute(dbQuery);
     
